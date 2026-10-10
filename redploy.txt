@@ -1,0 +1,3 @@
+.\.venv\Scripts\python.exe build_lambda.py   # rebuild ZIP (~90s)
+.\.venv\Scripts\python.exe deploy_lambda.py  # upload + update Lambda
+🔄 To Redeploy After Code Changes

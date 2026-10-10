@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="BurnWatch environmental operations console" />
+    <title>BurnWatch</title>
+    <meta name="map-attribution" content="OpenStreetMap" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <section id="login-view" class="login-view hidden" aria-labelledby="login-title">
+      <div class="login-card">
+        <p class="product-mark">BURNWATCH <span>ENVIRONMENTAL OPERATIONS</span></p>
+        <h1 id="login-title">Administrator sign in</h1>
+        <p class="login-copy">Dashboards do not require a login. This prototype sign-in exposes internal Operations controls only; it does not authenticate you or grant backend permissions.</p>
+        <form id="login-form" novalidate>
+          <label>Email or username<input id="login-identity" name="identity" autocomplete="username" required /></label>
+          <p id="identity-error" class="field-error" hidden></p>
+          <label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required /></label>
+          <p id="password-error" class="field-error" hidden></p>
+          <button type="submit" class="button button-primary">Enter administrator prototype</button>
+          <button id="close-admin-login" type="button" class="button button-secondary">Back to public dashboards</button>
+        </form>
+        <p class="prototype-note"><strong>Prototype session only.</strong> Passwords are not sent or stored. Production access requires server-enforced authentication and authorization.</p>
+      </div>
+    </section>
+
+    <div id="console" class="console">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand"><span class="brand-signal" aria-hidden="true"></span><span class="brand-label">BURNWATCH<small>OPERATIONS CONSOLE</small></span><button id="sidebar-collapse" class="sidebar-collapse" type="button" aria-label="Collapse sidebar" aria-pressed="false">«</button></div>
+        <nav class="primary-nav" aria-label="Dashboards">
+          <a href="#map" data-route="map"><span aria-hidden="true">◉</span> Incident Map</a>
+          <a href="#evidence" data-route="evidence"><span aria-hidden="true">⌁</span> Event Evidence</a>
+          <a href="#reports" data-route="reports"><span aria-hidden="true">⌑</span> Community Reports</a>
+          <a href="#workflow" data-route="workflow"><span aria-hidden="true">▤</span> Investigation Workflow</a>
+          <a href="#impact" data-route="impact"><span aria-hidden="true">▥</span> Impact Report</a>
+        </nav>
+        <div class="sidebar-footer">
+          <p class="connection-label">CONNECTION</p>
+          <p id="sidebar-connection" class="connection-state"><span></span> Checking API</p>
+          <p id="sidebar-source" class="source-mini">SOURCE: —</p>
+          <button id="sidebar-admin-login" class="sidebar-action" type="button">Administrator sign in</button>
+          <button id="theme-toggle" class="sidebar-action" type="button" aria-pressed="false">Light mode</button>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <button id="menu-toggle" class="icon-button mobile-menu" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
+          <div class="page-context"><p id="crumb" class="eyebrow">OPERATIONS CONSOLE</p><h1 id="page-title">Incident Map</h1></div>
+          <div class="topbar-status">
+            <span id="environment-chip" class="chip">LOCAL</span>
+            <span id="source-chip" class="chip chip-source">SOURCE: —</span>
+            <button id="refresh-button" class="icon-button" type="button" aria-label="Refresh live data" title="Refresh data">↻</button>
+            <div class="account-wrap">
+              <button id="account-toggle" class="account-button" type="button" aria-expanded="false" aria-controls="account-menu"><span id="account-initial">B</span><span id="account-name">Public view</span>⌄</button>
+              <div id="account-menu" class="account-menu hidden" role="menu">
+                <p id="account-role" class="account-role">PUBLIC DASHBOARDS</p>
+                <button id="operations-link" type="button" role="menuitem" class="hidden">Operations utility</button>
+                <button id="account-admin-login" type="button" role="menuitem">Administrator sign in</button>
+                <button id="logout-button" type="button" role="menuitem">Log out</button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div id="prototype-banner" class="prototype-banner" role="note"><strong>CanSat operational view:</strong> simulated records are excluded from all five public dashboards.</div>
+        <main id="main-content" tabindex="-1"></main>
+      </div>
+    </div>
+
+    <dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-title">
+      <form method="dialog">
+        <p class="eyebrow">CONFIRM ACTION</p>
+        <h2 id="confirm-title">Confirm change</h2>
+        <p id="confirm-copy"></p>
+        <div class="dialog-actions"><button value="cancel" class="button button-secondary">Cancel</button><button id="confirm-button" value="confirm" class="button button-danger">Confirm</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="serial-dialog" class="confirm-dialog serial-dialog" aria-labelledby="serial-title">
+      <form id="serial-dialog-form" method="dialog">
+        <p class="eyebrow">HARDWARE INTERFACE</p>
+        <h2 id="serial-title">Connect CanSat Serial Receiver</h2>
+        <p class="field-help" style="margin-bottom:1rem">Select the detectable Windows COM port (e.g. COM5, COM6) to which your receiver is connected.</p>
+        <div class="stack">
+          <label>Detected COM Ports
+            <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.25rem">
+              <select id="serial-port-select" style="flex:1"></select>
+              <button id="serial-rescan" type="button" class="button button-secondary" title="Rescan system COM ports">↻ Rescan</button>
+            </div>
+          </label>
+          <div id="serial-custom-container" class="hidden">
+            <label>Specify COM port manually
+              <input id="serial-custom-port" placeholder="e.g. COM5, COM6" />
+            </label>
+          </div>
+          <label>Baud Rate
+            <select id="serial-baudrate-select">
+              <option value="9600" selected>9600 baud (Standard CanSat)</option>
+              <option value="115200">115200 baud (High speed ESP32 / LoRa)</option>
+              <option value="57600">57600 baud</option>
+              <option value="38400">38400 baud</option>
+              <option value="19200">19200 baud</option>
+            </select>
+          </label>
+          <p id="serial-port-feedback" class="field-help"></p>
+        </div>
+        <div class="dialog-actions">
+          <button id="serial-dialog-cancel" type="button" class="button button-secondary">Cancel</button>
+          <button id="serial-dialog-submit" type="submit" class="button button-primary">Connect to Receiver</button>
+        </div>
+      </form>
+    </dialog>
+
+    <section id="toast-region" class="toast-region" aria-live="polite" aria-label="Status messages"></section>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
