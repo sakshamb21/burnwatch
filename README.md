@@ -1,6 +1,4 @@
 # BurnWatch
-https://kn05coszz5.execute-api.us-east-1.amazonaws.com/
-(prototype/demo)
 
 **CanSat-Assisted Environmental Incident Investigation System**
 
@@ -29,6 +27,9 @@ The CanSat uses:
 - SX1278 / RA-02 LoRa transceiver + ground-station receiver
 
 > **Note**: MQ135 provides relative anomaly detection only. Readings are not calibrated AQI, PM2.5, or ppm values.
+
+## Prototype/Demo
+https://kn05coszz5.execute-api.us-east-1.amazonaws.com/
 
 ## Requirements
 
